@@ -26,23 +26,16 @@ uint8_t degreeSymbol[8] = {
   0b00111,
 };
 
-float celcius;
+int celcius;
 
-// This function is called every time the Virtual Pin 0 state changes
-BLYNK_WRITE(V0)
+BLYNK_WRITE(V0)  
 {
-  // Set incoming value from pin V0 to a variable
   int value = param.asInt();
-
-  // Update state
   Blynk.virtualWrite(V1, value);
 }
 
-// This function sends Arduino's uptime every second to Virtual Pin 2.
 void myTimerEvent()
 {
-  // You can send any value at any time.
-  // Please don't send more that 10 values per second.
   Blynk.virtualWrite(V2, celcius);
 }
 
@@ -50,12 +43,7 @@ void setup() {
     Serial.begin(115200);
 
     Bridge.begin();  // make contact with the linux processor
-    Blynk.begin(BLYNK_AUTH_TOKEN);
-    // You can also specify server:
-    //Blynk.begin(BLYNK_AUTH_TOKEN, "blynk.cloud", 80);
-    //Blynk.begin(BLYNK_AUTH_TOKEN, IPAddress(192,168,240,1), 8080);
-
-    // Setup a function to be called every second
+    Blynk.begin(BLYNK_AUTH_TOKEN);  // You can also specify server:
     timer.setInterval(1000L, myTimerEvent);
     
     lcd.begin(16, 2, 0);
@@ -63,6 +51,8 @@ void setup() {
     lcd.createChar(3, degreeSymbol);
     lcd.setCursor(0, 0);
     lcd.print("Temperature");
+    lcd.setCursor(5, 1);
+    lcd.print("\x03");
 }
 
 void setBacklightColour(float celcius) {
@@ -88,27 +78,21 @@ void setBacklightColour(float celcius) {
     lcd.setRGB(r, g, b);
 }
 
-float analogToCelcius(int analog) {
-  float BETA = 3950;
-  return 1 / (log(1 / (1023. / analog - 1)) / BETA + 1.0 / 298.15) - 273.15;
+int analogToCelcius(int analog) {
+  float BETA = 3975;
+  float resistance = (float)(1023 - analog) * 10000 / analog;  //get the resistance of the sensor;
+  return 1 / (log(resistance / 10000) / BETA + 1 / 298.15) - 273.15;  //convert to temperature via datasheet&nbsp;;
 }
 
 void loop() {
     Blynk.run();
     timer.run();
-    // You can inject your own code or combine it with other sketches.
-    // Check other examples on how to communicate with Blynk. Remember
-    // to avoid delay() function!
 
     int analogValue = analogRead(A0);
     celcius = analogToCelcius(analogValue);
-    celcius = round(celcius * 10) / 10.0;  // Round to 1 decimal point
 
     lcd.setCursor(2, 1);
     lcd.print(celcius);
-
-    lcd.setCursor(8, 1);
-    lcd.print("\x03");
 
     setBacklightColour(celcius);
 }
