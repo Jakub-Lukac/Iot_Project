@@ -1,6 +1,10 @@
-#define BLYNK_TEMPLATE_ID           "TMPL4fnh6fOfH"
-#define BLYNK_TEMPLATE_NAME         "TESTING"
-#define BLYNK_AUTH_TOKEN            "euvMzHZrgcq9EjXGBV3cYtoN-rjmSNgo"
+// #define BLYNK_TEMPLATE_ID           "TMPL4fnh6fOfH"
+// #define BLYNK_TEMPLATE_NAME         "TESTING"
+// #define BLYNK_AUTH_TOKEN            "euvMzHZrgcq9EjXGBV3cYtoN-rjmSNgo"
+
+#define BLYNK_TEMPLATE_ID "TMPL4rY8eAPdy"
+#define BLYNK_TEMPLATE_NAME "RoomMonitorTest"
+#define BLYNK_AUTH_TOKEN "FbhVJkaUNkTJu4R2nffi3DF-MKS8qQ5M"
 
 #define BLYNK_PRINT Serial
 
@@ -26,17 +30,17 @@ uint8_t degreeSymbol[8] = {
   0b00111,
 };
 
-int celcius;
+double celcius;
+int humidity;
 
-BLYNK_WRITE(V0)  
-{
+BLYNK_WRITE(V0) {
   int value = param.asInt();
   Blynk.virtualWrite(V1, value);
 }
 
-void myTimerEvent()
-{
+void timerValues() {
   Blynk.virtualWrite(V2, celcius);
+  Blynk.virtualWrite(V3, humidity);
 }
 
 void setup() {
@@ -44,55 +48,69 @@ void setup() {
 
     Bridge.begin();  // make contact with the linux processor
     Blynk.begin(BLYNK_AUTH_TOKEN);  // You can also specify server:
-    timer.setInterval(1000L, myTimerEvent);
+
+    timer.setInterval(1000L, timerValues);
     
     lcd.begin(16, 2, 0);
     lcd.setRGB(0, 255, 0);
     lcd.createChar(3, degreeSymbol);
-    lcd.setCursor(0, 0);
-    lcd.print("Temperature");
-    lcd.setCursor(5, 1);
-    lcd.print("\x03");
 }
 
-void setBacklightColour(float celcius) {
+void setBacklightColour(float input, int min, int mid, int max) {
     int r, g, b;
-    const int minTemp = -5;
-    const int midTemp = 15;
-    const int maxTemp = 35;
 
-    if (celcius <= minTemp) {
+    if (input <= min) {
         r = 0;
         g = 0;
         b = 255;
-    } else if (celcius <= midTemp) {
+    } else if (input <= mid) {
         r = 0;
-        g = map(celcius, minTemp, midTemp, 0, 255);
+        g = map(input, min, mid, 0, 255);
         b = 255 - g;
     } else {
         r = 255;
-        g = map(celcius, midTemp, maxTemp, 255, 0);
+        g = map(input, mid, max, 255, 0);
         b = 0;
     }
 
     lcd.setRGB(r, g, b);
 }
 
-int analogToCelcius(int analog) {
-  float BETA = 3975;
-  float resistance = (float)(1023 - analog) * 10000 / analog;  //get the resistance of the sensor;
-  return 1 / (log(resistance / 10000) / BETA + 1 / 298.15) - 273.15;  //convert to temperature via datasheet&nbsp;;
+float tempToCelcius(float temp) {
+  const float BETA = 3975;
+  float resistance = (float)(1023 - temp) * 10000 / temp;  // get sensor's resistance
+  return 1 / (log(resistance / 10000) / BETA + 1 / 298.15) - 273.15;  // convert to temperature via datasheet&nbsp;
+}
+
+void printValue(float value, String title, String symbol, int min, int mid, int max) {
+    setBacklightColour(value, min, mid, max);
+    lcd.setCursor(0, 0);
+    lcd.print(title);
+    lcd.setCursor(2, 1);
+    lcd.print(celcius);
+    lcd.setCursor(5, 1);
+    lcd.print(symbol);
 }
 
 void loop() {
     Blynk.run();
     timer.run();
 
-    int analogValue = analogRead(A0);
-    celcius = analogToCelcius(analogValue);
+    float tempValue = analogRead(A0);
+    celcius = tempToCelcius(tempValue);
 
-    lcd.setCursor(2, 1);
-    lcd.print(celcius);
+    // int humidity = analogRead(A1);
+    int humidity = 54;
 
-    setBacklightColour(celcius);
+    // int button = analogRead(A2);
+    int button = 0;
+
+    if (button == 0) {
+      printValue(celcius, "Temperature", "\x03", -10, 15, 40);
+    }
+      
+    else if (button == 1) {
+      printValue(humidity, "Humidity", "%", 0, 50, 100);
+    }
+      
 }
