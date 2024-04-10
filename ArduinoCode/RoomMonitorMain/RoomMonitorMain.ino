@@ -99,20 +99,18 @@ void loop() {
     Blynk.run();
     timer.run();
 
-    float tempValue = analogRead(A0);
-    celcius = tempToCelcius(tempValue);
-
-    // int humidity = analogRead(A1);
-    int humidity = 54;
-
     int button = digitalRead(buttonPin);
+    Serial.println(button);
 
     if (button == 0) {
+      float tempValue = analogRead(A0);
+      celcius = tempToCelcius(tempValue);
       printValue(celcius, "Temperature", "\x03", -10, 15, 40);
     }
       
     else if (button == 1) {
+      // int humidity = analogRead(A1);
+      int humidity = 54;
       printValue(humidity, "Humidity", "%", 0, 50, 100);
     }
-      
 }
