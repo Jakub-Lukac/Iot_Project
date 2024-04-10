@@ -30,8 +30,10 @@ uint8_t degreeSymbol[8] = {
   0b00111,
 };
 
-double celcius;
+int celcius;
 int humidity;
+int button = 0;
+const int buttonPin = 2; 
 
 BLYNK_WRITE(V0) {
   int value = param.asInt();
@@ -44,6 +46,7 @@ void timerValues() {
 }
 
 void setup() {
+    pinMode(buttonPin, INPUT);
     Serial.begin(115200);
 
     Bridge.begin();  // make contact with the linux processor
@@ -76,8 +79,8 @@ void setBacklightColour(float input, int min, int mid, int max) {
     lcd.setRGB(r, g, b);
 }
 
-float tempToCelcius(float temp) {
-  const float BETA = 3975;
+int tempToCelcius(float temp) {
+  const int BETA = 3975;
   float resistance = (float)(1023 - temp) * 10000 / temp;  // get sensor's resistance
   return 1 / (log(resistance / 10000) / BETA + 1 / 298.15) - 273.15;  // convert to temperature via datasheet&nbsp;
 }
@@ -102,8 +105,7 @@ void loop() {
     // int humidity = analogRead(A1);
     int humidity = 54;
 
-    // int button = analogRead(A2);
-    int button = 0;
+    int button = digitalRead(buttonPin);
 
     if (button == 0) {
       printValue(celcius, "Temperature", "\x03", -10, 15, 40);
