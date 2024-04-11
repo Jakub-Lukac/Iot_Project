@@ -1,10 +1,10 @@
-// #define BLYNK_TEMPLATE_ID           "TMPL4fnh6fOfH"
-// #define BLYNK_TEMPLATE_NAME         "TESTING"
-// #define BLYNK_AUTH_TOKEN            "euvMzHZrgcq9EjXGBV3cYtoN-rjmSNgo"
+#define BLYNK_TEMPLATE_ID           "TMPL4fnh6fOfH"
+#define BLYNK_TEMPLATE_NAME         "TESTING"
+#define BLYNK_AUTH_TOKEN            "euvMzHZrgcq9EjXGBV3cYtoN-rjmSNgo"
 
-#define BLYNK_TEMPLATE_ID "TMPL4rY8eAPdy"
-#define BLYNK_TEMPLATE_NAME "RoomMonitorTest"
-#define BLYNK_AUTH_TOKEN "FbhVJkaUNkTJu4R2nffi3DF-MKS8qQ5M"
+// #define BLYNK_TEMPLATE_ID "TMPL4rY8eAPdy"
+// #define BLYNK_TEMPLATE_NAME "RoomMonitorTest"  
+// #define BLYNK_AUTH_TOKEN "FbhVJkaUNkTJu4R2nffi3DF-MKS8qQ5M"
 
 #define BLYNK_PRINT Serial
 
@@ -35,15 +35,17 @@ int humidity;
 int button = 0;
 const int buttonPin = 2; 
 
+
 BLYNK_WRITE(V0) {
   int value = param.asInt();
   Blynk.virtualWrite(V1, value);
 }
 
-void timerValues() {
+void myTimerEvent() {
   Blynk.virtualWrite(V2, celcius);
-  Blynk.virtualWrite(V3, humidity);
+  // Blynk.virtualWrite(V3, humidity);
 }
+
 
 void setup() {
     pinMode(buttonPin, INPUT);
@@ -52,11 +54,12 @@ void setup() {
     Bridge.begin();  // make contact with the linux processor
     Blynk.begin(BLYNK_AUTH_TOKEN);  // You can also specify server:
 
-    timer.setInterval(1000L, timerValues);
+    timer.setInterval(1000L, myTimerEvent);
     
     lcd.begin(16, 2, 0);
     lcd.setRGB(0, 255, 0);
     lcd.createChar(3, degreeSymbol);
+    Serial.println("SETUP DONE");
 }
 
 void setBacklightColour(float input, int min, int mid, int max) {
@@ -85,7 +88,7 @@ int tempToCelcius(float temp) {
   return 1 / (log(resistance / 10000) / BETA + 1 / 298.15) - 273.15;  // convert to temperature via datasheet&nbsp;
 }
 
-void printValue(float value, String title, String symbol, int min, int mid, int max) {
+void printValue(int value, String title, String symbol, int min, int mid, int max) {
     setBacklightColour(value, min, mid, max);
     lcd.setCursor(0, 0);
     lcd.print(title);
@@ -96,21 +99,22 @@ void printValue(float value, String title, String symbol, int min, int mid, int 
 }
 
 void loop() {
+    Serial.println("START OF LOOP");
     Blynk.run();
     timer.run();
 
-    int button = digitalRead(buttonPin);
+    button = digitalRead(buttonPin);
     Serial.println(button);
 
-    if (button == 0) {
-      float tempValue = analogRead(A0);
-      celcius = tempToCelcius(tempValue);
-      printValue(celcius, "Temperature", "\x03", -10, 15, 40);
+    if (button == HIGH) {
+        float tempValue = analogRead(A0);
+        celcius = tempToCelcius(tempValue);
+        printValue(celcius, "Temperature", "\x03", -10, 15, 40);
     }
-      
-    else if (button == 1) {
-      // int humidity = analogRead(A1);
-      int humidity = 54;
-      printValue(humidity, "Humidity", "%", 0, 50, 100);
+
+    else if (button == LOW) {
+        // int humidity = analogRead(A1);
+        humidity = 54;
+        printValue(humidity, "Humidity", "%", 0, 50, 100);
     }
 }
