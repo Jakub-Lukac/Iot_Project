@@ -94,7 +94,7 @@ void printValueToLCD(int value, String title, String symbol, int min, int mid, i
     lcd.setCursor(0, 0);
     lcd.print(title);
     lcd.setCursor(2, 1);
-    lcd.print(celcius);
+    lcd.print(value);
     lcd.setCursor(5, 1);
     lcd.print(symbol);
 }
@@ -110,11 +110,13 @@ void loop() {
         celcius = tempToCelcius(analogRead(A0));
         printValueToLCD(celcius, "Temperature", "\x03", -10, 15, 40);
         
+        
     }
-
     else if (rotary >= 150) {
         // int humidity = analogRead(A1);
         humidity = 54;
         printValueToLCD(humidity, "Humidity", "%", 0, 50, 100);
     }
+        delay(1000);
+        lcd.clear();
 }
