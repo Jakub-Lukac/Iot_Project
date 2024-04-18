@@ -8,6 +8,8 @@
 
 #define BLYNK_PRINT Serial
 
+#define ROTARY_ANGLE_SENSOR A2
+
 #include <Bridge.h>
 #include <BlynkSimpleYun.h>
 #include <Process.h>
@@ -32,8 +34,7 @@ uint8_t degreeSymbol[8] = {
 
 int celcius;
 int humidity;
-int button = 0;
-const int buttonPin = 2; 
+int rotary = 0;
 
 
 BLYNK_WRITE(V0) {
@@ -48,7 +49,7 @@ void myTimerEvent() {
 
 
 void setup() {
-    pinMode(buttonPin, INPUT);
+    pinMode(ROTARY_ANGLE_SENSOR, INPUT);
     Serial.begin(115200);
 
     Bridge.begin();  // make contact with the linux processor
@@ -88,7 +89,7 @@ int tempToCelcius(float temp) {
   return 1 / (log(resistance / 10000) / BETA + 1 / 298.15) - 273.15;  // convert to temperature via datasheet&nbsp;
 }
 
-void printValue(int value, String title, String symbol, int min, int mid, int max) {
+void printValueToLCD(int value, String title, String symbol, int min, int mid, int max) {
     setBacklightColour(value, min, mid, max);
     lcd.setCursor(0, 0);
     lcd.print(title);
@@ -99,22 +100,21 @@ void printValue(int value, String title, String symbol, int min, int mid, int ma
 }
 
 void loop() {
-    Serial.println("START OF LOOP");
     Blynk.run();
     timer.run();
 
-    button = digitalRead(buttonPin);
-    Serial.println(button);
+    rotary = analogRead(ROTARY_ANGLE_SENSOR);
+    Serial.println(rotary);
 
-    if (button == HIGH) {
-        float tempValue = analogRead(A0);
-        celcius = tempToCelcius(tempValue);
-        printValue(celcius, "Temperature", "\x03", -10, 15, 40);
+    if (rotary < 150) {
+        celcius = tempToCelcius(analogRead(A0));
+        printValueToLCD(celcius, "Temperature", "\x03", -10, 15, 40);
+        
     }
 
-    else if (button == LOW) {
+    else if (rotary >= 150) {
         // int humidity = analogRead(A1);
         humidity = 54;
-        printValue(humidity, "Humidity", "%", 0, 50, 100);
+        printValueToLCD(humidity, "Humidity", "%", 0, 50, 100);
     }
 }
