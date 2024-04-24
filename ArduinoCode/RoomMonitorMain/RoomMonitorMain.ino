@@ -34,6 +34,7 @@ uint8_t degreeSymbol[8] = {
 
 int celcius;
 int humidity;
+int airQuality;
 int rotary = 0;
 
 
@@ -45,6 +46,7 @@ BLYNK_WRITE(V0) {
 void myTimerEvent() {
   Blynk.virtualWrite(V2, celcius);
   // Blynk.virtualWrite(V3, humidity);
+  // Blynk.virtualWrite(V4, airQuality);
 }
 
 
@@ -117,6 +119,7 @@ void loop() {
         humidity = 54;
         printValueToLCD(humidity, "Humidity", "%", 0, 50, 100);
     }
-        delay(1000);
-        lcd.clear();
+
+    delay(1000);
+    lcd.clear();
 }

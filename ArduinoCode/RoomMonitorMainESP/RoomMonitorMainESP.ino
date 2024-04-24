@@ -1,12 +1,12 @@
 #define BLYNK_PRINT Serial 
 // #define ROTARY_ANGLE_SENSOR A2
 
-#include "secrets.h"
 #include <WiFi.h>
-#include "esp_wpa2.h"
 #include <WiFiClient.h>
 #include <BlynkSimpleEsp32.h>
 #include <Wire.h>
+#include "secrets.h"
+#include "esp_wpa2.h"
 #include "rgb_lcd.h"
 rgb_lcd lcd;
 BlynkTimer timer;
