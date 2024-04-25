@@ -5,14 +5,14 @@
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <BlynkSimpleEsp32.h>
-#include <Wire.h>
 #include "esp_wpa2.h"
 #include <DHT.h>
+#include <Wire.h>
 #include "rgb_lcd.h"
 
-#define MQ135PIN 36  // Analog pin for MQ-135 air quality sensor
+#define MQ135PIN 0  // Analog pin for MQ-135 air quality sensor
 #define DHTPIN 2   // Digital pin for DHT-11 temperature/humidity sensor
-#define CONTROLLERPIN 39  // Analog pin for button/rotary controller to switch modes of LCD
+#define CONTROLLERPIN 4  // Analog pin for button/rotary controller to switch modes of LCD
 DHT dht(DHTPIN, DHT11);  // Types: DHT11, DHT22 (AM2302, AM2321), DHT21 (AM2301)
 
 rgb_lcd lcd;
