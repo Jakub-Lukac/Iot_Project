@@ -10,10 +10,12 @@
 #include <Wire.h>
 #include "rgb_lcd.h"
 
-#define MQ135PIN 0  // Analog pin for MQ-135 air quality sensor
-#define DHTPIN 2   // Digital pin for DHT-11 temperature/humidity sensor
-#define CONTROLLERPIN 4  // Analog pin for button/rotary controller to switch modes of LCD
-DHT dht(DHTPIN, DHT11);  // Types: DHT11, DHT22 (AM2302, AM2321), DHT21 (AM2301)
+#define MQ135PIN A4  // Analog pin for MQ-135 air quality sensor
+#define DHTPIN A2   // Digital pin for DHT-11 temperature/humidity sensor
+#define DHTTYPE DHT11
+
+#define CONTROLLERPIN A0  // Analog pin for button/rotary controller to control the RGB LCD
+DHT dht(DHTPIN, DHTTYPE);  // Types: DHT11, DHT22 (AM2302, AM2321), DHT21 (AM2301)
 
 rgb_lcd lcd;
 
@@ -21,8 +23,8 @@ BlynkTimer timer;
 
 uint8_t degreeSymbol[8] = { 0b11100, 0b10100, 0b11100, 0b00000, 0b00111, 0b00100, 0b00100, 0b00111 };
 
-int celcius;
-int humidity;
+float celcius;
+float humidity;
 int airQuality;
 int rotary = 0;
 
@@ -71,8 +73,14 @@ void mainTimer() {
   // celcius = 15;
   celcius = dht.readTemperature();
 
+  delay(3000);
+
   // humidity = 50;
   humidity = dht.readHumidity();
+
+  if (isnan(celcius) || isnan(humidity)) {
+    Serial.println("Failed to read from DHT sensor!");
+  }
 
   // airQuality = 30;
   airQuality = analogRead(MQ135PIN);
@@ -81,34 +89,48 @@ void mainTimer() {
   Blynk.virtualWrite(V3, humidity);
   Blynk.virtualWrite(V4, airQuality);
 
-  // rotary = 70;
-  rotary = analogRead(CONTROLLERPIN);
+  Serial.print("Celcius: ");
+  Serial.print(celcius);
+  Serial.println(" 'C");
 
-  if (rotary < 80) {
-    printValueToLCD(celcius, "Temperature", "\x03", -10, 15, 40);
-  } else if (rotary <= 160) {
+  Serial.print("Humidity: ");
+  Serial.print(humidity);
+  Serial.println(" %");
+
+  Serial.print("Air Quality: ");
+  Serial.print(airQuality);
+  Serial.println(" AQI");
+
+  button = 0;
+  // button = analogRead(CONTROLLERPIN);
+
+  if (button < 80) {
+    printValueToLCD(celcius, "Temperature", "\x03", -10, 15, 50);
+  } else if (button <= 160) {
     printValueToLCD(humidity, "Humidity", "%", 0, 50, 100);
-  } else if (rotary > 160) {
+  } else if (button > 160) {
     printValueToLCD(airQuality, "Air Quality", "AQI", 0, 250, 500);
   }
 }
 
 void setup() {
   Serial.begin(115200);
-  delay(10);
+
   int status = WL_IDLE_STATUS;
   Serial.print("\nConnecting to network: ");
   Serial.println(WIFI_SSID);
   Serial.println(getWifiStatus(status));
   WiFi.disconnect(true);  // Disconnect from Wi-Fi to set new Wi-Fi connection
   WiFi.mode(WIFI_STA);  // Set Wi-Fi mode
-  WiFi.begin(WIFI_SSID, WPA2_AUTH_PEAP, EAP_ANONYMOUS_IDENTITY, EAP_IDENTITY, EAP_PASSWORD); 
+  // WiFi.begin(WIFI_SSID, WPA2_AUTH_PEAP, EAP_ANONYMOUS_IDENTITY, EAP_IDENTITY, EAP_PASSWORD); 
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
   int counter = 0;
   while (WiFi.status() != WL_CONNECTED) {
     if (counter++ >= 60) { ESP.restart(); }
     status = WiFi.status();
     Serial.print(getWifiStatus(status));
+    // pinMode(CONTROLLERPIN, INPUT);
     Serial.println("...");
     delay(500);
   }
@@ -118,15 +140,17 @@ void setup() {
   Serial.println(F("Local ESP32 IP: "));
   Serial.println(WiFi.localIP());
     
-  pinMode(MQ135PIN, INPUT);
-  pinMode(CONTROLLERPIN, INPUT);
+  pinMode(DHTPIN, INPUT_PULLUP);
+  // pinMode(CONTROLLERPIN, INPUT);
 
   lcd.begin(16, 2, 0);
   lcd.setRGB(0, 255, 0);
   lcd.createChar(3, degreeSymbol);
 
-  Blynk.begin(BLYNK_AUTH_TOKEN, WIFI_SSID, "");
-  timer.setInterval(1000L, mainTimer);
+  dht.begin();
+
+  Blynk.begin(BLYNK_AUTH_TOKEN, WIFI_SSID, WIFI_PASSWORD);
+  timer.setInterval(3000L, mainTimer);
 }
 
 void loop() {
