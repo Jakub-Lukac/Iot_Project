@@ -11,10 +11,10 @@
 #include "rgb_lcd.h"
 
 #define MQ135PIN A4  // Analog pin for MQ-135 air quality sensor
-#define DHTPIN A2   // Digital pin for DHT-11 temperature/humidity sensor
+#define DHTPIN A0   // Digital pin for DHT-11 temperature/humidity sensor
 #define DHTTYPE DHT11
 
-#define CONTROLLERPIN A0  // Analog pin for button/rotary controller to control the RGB LCD
+#define CONTROLLERPIN A27  // Analog pin for button/rotary controller to control the RGB LCD
 DHT dht(DHTPIN, DHTTYPE);  // Types: DHT11, DHT22 (AM2302, AM2321), DHT21 (AM2301)
 
 rgb_lcd lcd;
@@ -26,7 +26,7 @@ uint8_t degreeSymbol[8] = { 0b11100, 0b10100, 0b11100, 0b00000, 0b00111, 0b00100
 float celcius;
 float humidity;
 int airQuality;
-int rotary = 0;
+int button = 0;
 
 String getWifiStatus(int status) {
   switch(status) {
@@ -113,9 +113,7 @@ void mainTimer() {
   }
 }
 
-void setup() {
-  Serial.begin(115200);
-
+void connectToWifi() {
   int status = WL_IDLE_STATUS;
   Serial.print("\nConnecting to network: ");
   Serial.println(WIFI_SSID);
@@ -139,7 +137,13 @@ void setup() {
   Serial.println(F("Connected!"));
   Serial.println(F("Local ESP32 IP: "));
   Serial.println(WiFi.localIP());
-    
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  connectToWifi();
+
   pinMode(DHTPIN, INPUT_PULLUP);
   // pinMode(CONTROLLERPIN, INPUT);
 
