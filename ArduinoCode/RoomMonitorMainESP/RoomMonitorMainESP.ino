@@ -1,5 +1,4 @@
 #define BLYNK_PRINT Serial 
-// #define ROTARY_ANGLE_SENSOR A2
 
 #include "secrets.h"
 #include <WiFi.h>
@@ -70,12 +69,10 @@ void printValueToLCD(int value, String title, String symbol, int min, int mid, i
 }
 
 void mainTimer() {
-  // celcius = 15;
+  // celcius = 15.6;
   celcius = dht.readTemperature();
 
-  delay(3000);
-
-  // humidity = 50;
+  // humidity = 40.1;
   humidity = dht.readHumidity();
 
   if (isnan(celcius) || isnan(humidity)) {
@@ -101,8 +98,8 @@ void mainTimer() {
   Serial.print(airQuality);
   Serial.println(" AQI");
 
-  button = 0;
-  // button = analogRead(CONTROLLERPIN);
+  // button = 0;
+  button = analogRead(CONTROLLERPIN);
 
   if (button < 80) {
     printValueToLCD(celcius, "Temperature", "\x03", -10, 15, 50);
@@ -120,15 +117,15 @@ void connectToWifi() {
   Serial.println(getWifiStatus(status));
   WiFi.disconnect(true);  // Disconnect from Wi-Fi to set new Wi-Fi connection
   WiFi.mode(WIFI_STA);  // Set Wi-Fi mode
-  // WiFi.begin(WIFI_SSID, WPA2_AUTH_PEAP, EAP_ANONYMOUS_IDENTITY, EAP_IDENTITY, EAP_PASSWORD); 
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  WiFi.begin(WIFI_SSID, WPA2_AUTH_PEAP, EAP_ANONYMOUS_IDENTITY, EAP_IDENTITY, EAP_PASSWORD); 
+  // WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
   int counter = 0;
   while (WiFi.status() != WL_CONNECTED) {
     if (counter++ >= 60) { ESP.restart(); }
     status = WiFi.status();
     Serial.print(getWifiStatus(status));
-    // pinMode(CONTROLLERPIN, INPUT);
+    pinMode(CONTROLLERPIN, INPUT);
     Serial.println("...");
     delay(500);
   }
@@ -141,11 +138,8 @@ void connectToWifi() {
 
 void setup() {
   Serial.begin(115200);
-
   connectToWifi();
-
-  pinMode(DHTPIN, INPUT_PULLUP);
-  // pinMode(CONTROLLERPIN, INPUT);
+  pinMode(CONTROLLERPIN, INPUT);
 
   lcd.begin(16, 2, 0);
   lcd.setRGB(0, 255, 0);
