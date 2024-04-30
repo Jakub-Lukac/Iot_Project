@@ -19,15 +19,7 @@ The project creates a room monitoring system for living spaces lacking environme
 •	Display current state through display located on the front of the console.
 •	Display current state through mobile application
 
-# Initial Design
-  # Initial housing desing
-    ![image](https://github.com/Jakub-Lukac/Iot_Project/assets/150395597/0d296dc1-6328-4757-b960-58a88b1c36c0)
-  # Dimension sketch for the components
-    ![image](https://github.com/Jakub-Lukac/Iot_Project/assets/150395597/e4b23e5e-685b-47c9-9e6c-3c34fcd9f297)
-  # Wiring Diagram
-    ![image](https://github.com/Jakub-Lukac/Iot_Project/assets/150395597/bce0b792-1b61-446a-925e-13f1f2021ee9)
-  # Low fidelity prototype for mobile app
-    ![image](https://github.com/Jakub-Lukac/Iot_Project/assets/150395597/9f392707-d611-4829-b72d-d6476879a37a)
+
 
 # Reference List
 Noëlle Cotter, Eugene Monahan, Helen McAvoy, Patrick Goodman 2012, ‘Coping with the cold – exploring relationships between cold housing, health and social wellbeing in a sample of older people in Ireland’ emerald [Online]. Available from: https://www.emerald.com/insight/content/doi/10.1108/14717791211213607/full/html
