@@ -14,19 +14,20 @@
 #define DHTPIN 34   // Digital pin for DHT-11 temperature/humidity sensor
 // #define DHTTYPE DHT11
 
-#define CONTROLLERPIN 25  // Digital pin for button/rotary controller to control the RGB LCD
+#define BUTTON_PIN 25  // Digital pin for button/rotary controller to control the RGB LCD
 // DHT dht(DHTPIN, DHTTYPE);  // Types: DHT11, DHT22 (AM2302, AM2321), DHT21 (AM2301)
 
 rgb_lcd lcd;
-
 BlynkTimer timer;
 
 uint8_t degreeSymbol[8] = { 0b11100, 0b10100, 0b11100, 0b00000, 0b00111, 0b00100, 0b00100, 0b00111 };
 
+float analogTemp;
 int celcius;
-// float humidity;
 int airQuality;
-int button;
+int currentButtonState;
+int lastButtonState;
+int lcdState = LOW;
 
 String getWifiStatus(int status) {
   switch(status) {
@@ -80,48 +81,27 @@ void printValueToLCD(int value, String title, String symbol, int min, int mid, i
 }
 
 void mainTimer() {
-  // celcius = 15.6;
-  // celcius = dht.readTemperature();
-  float analog = analogRead(DHTPIN);
-  celcius = tempToCelcius(analog);
+  lastButtonState = currentButtonState;
+  currentButtonState = digitalRead(BUTTON_PIN);
 
-  // humidity = 40.1;
-  // humidity = dht.readHumidity();
-
-  /*
-  if (isnan(celcius) || isnan(humidity)) {
-    Serial.println("Failed to read from DHT sensor!");
-  }
-  */
-
-  // airQuality = 30;
+  analogTemp = analogRead(DHTPIN);
+  celcius = tempToCelcius(analogTemp);
   airQuality = analogRead(MQ135PIN);
 
-  // button = 0;
-  button = digitalRead(CONTROLLERPIN);
-
   Blynk.virtualWrite(V2, celcius);
-  // Blynk.virtualWrite(V3, humidity);
   Blynk.virtualWrite(V4, airQuality);
 
-  Serial.print("Celcius: ");
-  Serial.print(celcius);
-  Serial.println(" 'C");
+  if (lastButtonState == HIGH && currentButtonState == LOW) {
+    if (lcdState == LOW) {
+      lcdState = HIGH;  
+    } else {
+      lcdState = LOW;
+    }
+  }
 
-  Serial.print("Air Quality: ");
-  Serial.print(airQuality);
-  Serial.println(" AQI");
-
-  Serial.print("Button: ");
-  Serial.println(button);
-
-  if (button == 0) {
+  if (lcdState == LOW) {
     printValueToLCD(celcius, "Temperature", "\x03", -10, 15, 50);
-    /*
-  } else if (button <= 160) {
-    printValueToLCD(humidity, "Humidity", "%", 0, 50, 100);
-    */
-  } else if (button == 1) {
+  } else {
     printValueToLCD(airQuality, "Air Quality", " AQI", 0, 250, 500);
   }
 }
@@ -141,7 +121,7 @@ void connectToWifi() {
     if (counter++ >= 60) { ESP.restart(); }
     status = WiFi.status();
     Serial.print(getWifiStatus(status));
-    pinMode(CONTROLLERPIN, INPUT);
+    pinMode(BUTTON_PIN, INPUT);
     Serial.println("...");
     delay(500);
   }
@@ -155,16 +135,15 @@ void connectToWifi() {
 void setup() {
   Serial.begin(115200);
   connectToWifi();
-  pinMode(CONTROLLERPIN, INPUT);
+  pinMode(BUTTON_PIN, INPUT);
 
   lcd.begin(16, 2, 0);
   lcd.setRGB(0, 255, 0);
   lcd.createChar(3, degreeSymbol);
 
-  // dht.begin();
-
   Blynk.begin(BLYNK_AUTH_TOKEN, WIFI_SSID, WIFI_PASSWORD);
-  timer.setInterval(3000L, mainTimer);
+  currentButtonState = digitalRead(BUTTON_PIN);
+  timer.setInterval(1000L, mainTimer);
 }
 
 void loop() {
