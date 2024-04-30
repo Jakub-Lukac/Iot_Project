@@ -9,7 +9,10 @@ It will consist of two folders, Code and Documentation.
 The device addresses the need to monitor and maintain quality living conditions in university accommodations and homes, aiming to prevent issues like mold growth. It also benefits elderly individuals living in cold homes by improving their health and social well-being.
 
 # Project Solution
-The project creates a room monitoring system for living spaces lacking environmental monitoring. It tracks temperature, humidity, and light levels using microcontrollers and physical sensors, with a screen and optional mobile app for accessibility. Resources are openly available on GitHub for collaboration and transparency. 
+The project creates a room monitoring system for living spaces lacking environmental monitoring. It tracks temperature, humidity, and light levels using microcontrollers and physical sensors, with a screen and optional mobile app for accessibility. Resources are openly available on GitHub for collaboration and transparency.
+
+
+<img width="485" alt="Initial housing sketch" src="https://github.com/Jakub-Lukac/Iot_Project/assets/150395597/2a94d848-76a9-45d5-ba11-d8b7490ae666">
 
 # Project Requirements
 •	Measure temperature.
