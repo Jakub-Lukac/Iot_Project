@@ -41,21 +41,31 @@ String getWifiStatus(int status) {
   }
 }
 
-void setBacklightColour(float input, int min, int mid, int max) {
-  int r, g, b;
+void setBacklightColour(float input, int min, int mid, int mid_max, int max) {
   if (input <= min) {
-    r = 0;
-    g = 0;
-    b = 255;
-  } else if (input <= mid) {
-    r = 0;
-    g = map(input, min, mid, 0, 255);
-    b = 255 - g;
-  } else {
-    r = 255;
-    g = map(input, mid, max, 255, 0);
-    b = 0;
+    int r = 0;
+    int g = 0;
+    int b = 255;
+  } 
+
+  else if (input >= max) {
+    int r = 255;
+    int g = 0;
+    int b = 0;
+  } 
+
+  else {
+    float x[] = {min, mid, mid_max, max};
+
+    int y_r[] = {0, 0, 255, 255};
+    int y_g[] = {0, 255, 255, 0};
+    int y_b[] = {255, 0, 0, 0};
+
+    int r = constrain(map(input, min, max, 0, 255), 0, 255);
+    int g = constrain(map(input, min, max, 0, 255), 0, 255);
+    int b = constrain(map(input, min, max, 0, 255), 0, 255);
   }
+
   lcd.setRGB(r, g, b);
 }
 
@@ -69,9 +79,9 @@ int tempToCelcius(float analog) {
   return 1.0 / (log(R / R0) / B + 1 / 278.15) - 273.15;
 }
 
-void printValueToLCD(int value, String title, String symbol, int min, int mid, int max) {
+void printValueToLCD(int value, String title, String symbol, int min, int mid, int mid_max, int max) {
   lcd.clear();
-  setBacklightColour(value, min, mid, max);
+  setBacklightColour(value, min, mid, mid_max, max);
   lcd.setCursor(0, 0);
   lcd.print(title);
   lcd.setCursor(2, 1);
@@ -92,18 +102,12 @@ void mainTimer() {
   Blynk.virtualWrite(V4, airQuality);
 
   if (lastButtonState == HIGH && currentButtonState == LOW) {
-    if (lcdState == LOW) {
-      lcdState = HIGH;  
-    } else {
-      lcdState = LOW;
-    }
+    if (lcdState == LOW) { lcdState = HIGH; } 
+    else { lcdState = LOW; }
   }
 
-  if (lcdState == LOW) {
-    printValueToLCD(celcius, "Temperature", "\x03", -10, 15, 50);
-  } else {
-    printValueToLCD(airQuality, "Air Quality", " AQI", 0, 250, 500);
-  }
+  if (lcdState == LOW) { printValueToLCD(celcius, "Temperature", "\x03", -10, 17, 25, 50); } 
+  else { printValueToLCD(airQuality, "Air Quality", " AQI", 0, 100, 150, 600); }
 }
 
 void connectToWifi() {
