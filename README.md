@@ -11,17 +11,6 @@ The device addresses the need to monitor and maintain quality living conditions 
 # Project Solution
 The project creates a room monitoring system for living spaces lacking environmental monitoring. It tracks temperature, humidity, and light levels using microcontrollers and physical sensors, with a screen and optional mobile app for accessibility. Resources are openly available on GitHub for collaboration and transparency.
 
-# Initial Design
-  # Initial housing design
-  
-  # Dimension sketch for components
-
-  # Wiring Diagram
-
-  # Low Fidelity Prototype 
-
-
-
 # Project Requirements
 •	Measure temperature.
 •	Measure humidity.
@@ -29,8 +18,6 @@ The project creates a room monitoring system for living spaces lacking environme
 •	Connect and send data through any specified Wireless connection (Wi-Fi), including eduroam (WPA2 Enterprise).
 •	Display current state through display located on the front of the console.
 •	Display current state through mobile application
-
-
 
 # Reference List
 Noëlle Cotter, Eugene Monahan, Helen McAvoy, Patrick Goodman 2012, ‘Coping with the cold – exploring relationships between cold housing, health and social wellbeing in a sample of older people in Ireland’ emerald [Online]. Available from: https://www.emerald.com/insight/content/doi/10.1108/14717791211213607/full/html
