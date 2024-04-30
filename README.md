@@ -13,7 +13,7 @@ The project creates a room monitoring system for living spaces lacking environme
 
 # Initial Design
   # Initial housing design
-
+    <img width="485" alt="Initial housing sketch" src="https://github.com/Jakub-Lukac/Iot_Project/assets/150395597/140c22bc-bb96-42f3-a9ee-0f3f96f9524f">
   # Dimension sketch for components
 
   # Wiring Diagram
