@@ -11,8 +11,16 @@ The device addresses the need to monitor and maintain quality living conditions 
 # Project Solution
 The project creates a room monitoring system for living spaces lacking environmental monitoring. It tracks temperature, humidity, and light levels using microcontrollers and physical sensors, with a screen and optional mobile app for accessibility. Resources are openly available on GitHub for collaboration and transparency.
 
+# Initial Design
+  # Initial housing design
+    <img width="485" alt="Initial housing sketch" src="https://github.com/Jakub-Lukac/Iot_Project/assets/150395597/2a94d848-76a9-45d5-ba11-d8b7490ae666">
+  # Dimension sketch for components
+    <img width="357" alt="Dminesion sketch for components" src="https://github.com/Jakub-Lukac/Iot_Project/assets/150395597/77678f38-fc06-4319-ae40-01b9aa6b35ef">
+  # Wiring Diagram
+    <img width="226" alt="Wiring diagram" src="https://github.com/Jakub-Lukac/Iot_Project/assets/150395597/aeac1d53-aa90-4e05-a842-f9270f4a6a2c">
+  # Low Fidelity Prototype 
+    <img width="163" alt="Low Fidelity Prototype" src="https://github.com/Jakub-Lukac/Iot_Project/assets/150395597/441152ab-4f88-4cdd-8ea5-403cb2ef6c26">
 
-<img width="485" alt="Initial housing sketch" src="https://github.com/Jakub-Lukac/Iot_Project/assets/150395597/2a94d848-76a9-45d5-ba11-d8b7490ae666">
 
 # Project Requirements
 •	Measure temperature.
