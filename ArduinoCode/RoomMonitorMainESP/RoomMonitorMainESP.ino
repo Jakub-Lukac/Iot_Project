@@ -8,13 +8,14 @@
 #include <DHT.h>
 #include <Wire.h>
 #include "rgb_lcd.h"
+#include <math.h>
 
 #define MQ135PIN A4  // Analog pin for MQ-135 air quality sensor
-#define DHTPIN A0   // Digital pin for DHT-11 temperature/humidity sensor
-#define DHTTYPE DHT11
+#define DHTPIN 34   // Digital pin for DHT-11 temperature/humidity sensor
+// #define DHTTYPE DHT11
 
-#define CONTROLLERPIN A27  // Analog pin for button/rotary controller to control the RGB LCD
-DHT dht(DHTPIN, DHTTYPE);  // Types: DHT11, DHT22 (AM2302, AM2321), DHT21 (AM2301)
+#define CONTROLLERPIN 25  // Digital pin for button/rotary controller to control the RGB LCD
+// DHT dht(DHTPIN, DHTTYPE);  // Types: DHT11, DHT22 (AM2302, AM2321), DHT21 (AM2301)
 
 rgb_lcd lcd;
 
@@ -22,10 +23,10 @@ BlynkTimer timer;
 
 uint8_t degreeSymbol[8] = { 0b11100, 0b10100, 0b11100, 0b00000, 0b00111, 0b00100, 0b00100, 0b00111 };
 
-float celcius;
-float humidity;
+int celcius;
+// float humidity;
 int airQuality;
-int button = 0;
+int button;
 
 String getWifiStatus(int status) {
   switch(status) {
@@ -57,6 +58,16 @@ void setBacklightColour(float input, int min, int mid, int max) {
   lcd.setRGB(r, g, b);
 }
 
+int tempToCelcius(float analog) {
+  const int B = 4275;               // B value of the thermistor
+  const int R0 = 100000;            // R0 = 100k
+
+  float R = 4095.0 / analog - 1.0;
+  R = R0 * R;
+
+  return 1.0 / (log(R / R0) / B + 1 / 278.15) - 273.15;
+}
+
 void printValueToLCD(int value, String title, String symbol, int min, int mid, int max) {
   lcd.clear();
   setBacklightColour(value, min, mid, max);
@@ -70,43 +81,48 @@ void printValueToLCD(int value, String title, String symbol, int min, int mid, i
 
 void mainTimer() {
   // celcius = 15.6;
-  celcius = dht.readTemperature();
+  // celcius = dht.readTemperature();
+  float analog = analogRead(DHTPIN);
+  celcius = tempToCelcius(analog);
 
   // humidity = 40.1;
-  humidity = dht.readHumidity();
+  // humidity = dht.readHumidity();
 
+  /*
   if (isnan(celcius) || isnan(humidity)) {
     Serial.println("Failed to read from DHT sensor!");
   }
+  */
 
   // airQuality = 30;
   airQuality = analogRead(MQ135PIN);
 
+  // button = 0;
+  button = digitalRead(CONTROLLERPIN);
+
   Blynk.virtualWrite(V2, celcius);
-  Blynk.virtualWrite(V3, humidity);
+  // Blynk.virtualWrite(V3, humidity);
   Blynk.virtualWrite(V4, airQuality);
 
   Serial.print("Celcius: ");
   Serial.print(celcius);
   Serial.println(" 'C");
 
-  Serial.print("Humidity: ");
-  Serial.print(humidity);
-  Serial.println(" %");
-
   Serial.print("Air Quality: ");
   Serial.print(airQuality);
   Serial.println(" AQI");
 
-  // button = 0;
-  button = analogRead(CONTROLLERPIN);
+  Serial.print("Button: ");
+  Serial.println(button);
 
-  if (button < 80) {
+  if (button == 0) {
     printValueToLCD(celcius, "Temperature", "\x03", -10, 15, 50);
+    /*
   } else if (button <= 160) {
     printValueToLCD(humidity, "Humidity", "%", 0, 50, 100);
-  } else if (button > 160) {
-    printValueToLCD(airQuality, "Air Quality", "AQI", 0, 250, 500);
+    */
+  } else if (button == 1) {
+    printValueToLCD(airQuality, "Air Quality", " AQI", 0, 250, 500);
   }
 }
 
@@ -145,7 +161,7 @@ void setup() {
   lcd.setRGB(0, 255, 0);
   lcd.createChar(3, degreeSymbol);
 
-  dht.begin();
+  // dht.begin();
 
   Blynk.begin(BLYNK_AUTH_TOKEN, WIFI_SSID, WIFI_PASSWORD);
   timer.setInterval(3000L, mainTimer);
