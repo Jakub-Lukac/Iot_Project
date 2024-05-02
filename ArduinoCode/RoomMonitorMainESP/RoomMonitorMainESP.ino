@@ -14,19 +14,20 @@
 #define DHTPIN 34   // Digital pin for DHT-11 temperature/humidity sensor
 // #define DHTTYPE DHT11
 
-#define CONTROLLERPIN 25  // Digital pin for button/rotary controller to control the RGB LCD
+#define BUTTON_PIN 25  // Digital pin for button/rotary controller to control the RGB LCD
 // DHT dht(DHTPIN, DHTTYPE);  // Types: DHT11, DHT22 (AM2302, AM2321), DHT21 (AM2301)
 
 rgb_lcd lcd;
-
 BlynkTimer timer;
 
 uint8_t degreeSymbol[8] = { 0b11100, 0b10100, 0b11100, 0b00000, 0b00111, 0b00100, 0b00100, 0b00111 };
 
+float analogTemp;
 int celcius;
-// float humidity;
 int airQuality;
-int button;
+int currentButtonState;
+int lastButtonState;
+int lcdState = LOW;
 
 String getWifiStatus(int status) {
   switch(status) {
@@ -40,21 +41,31 @@ String getWifiStatus(int status) {
   }
 }
 
-void setBacklightColour(float input, int min, int mid, int max) {
-  int r, g, b;
+void setBacklightColour(float input, int min, int mid, int mid_max, int max) {
   if (input <= min) {
-    r = 0;
-    g = 0;
-    b = 255;
-  } else if (input <= mid) {
-    r = 0;
-    g = map(input, min, mid, 0, 255);
-    b = 255 - g;
-  } else {
-    r = 255;
-    g = map(input, mid, max, 255, 0);
-    b = 0;
+    int r = 0;
+    int g = 0;
+    int b = 255;
+  } 
+
+  else if (input >= max) {
+    int r = 255;
+    int g = 0;
+    int b = 0;
+  } 
+
+  else {
+    float x[] = {min, mid, mid_max, max};
+
+    int y_r[] = {0, 0, 255, 255};
+    int y_g[] = {0, 255, 255, 0};
+    int y_b[] = {255, 0, 0, 0};
+
+    int r = constrain(map(input, min, max, 0, 255), 0, 255);
+    int g = constrain(map(input, min, max, 0, 255), 0, 255);
+    int b = constrain(map(input, min, max, 0, 255), 0, 255);
   }
+
   lcd.setRGB(r, g, b);
 }
 
@@ -68,9 +79,9 @@ int tempToCelcius(float analog) {
   return 1.0 / (log(R / R0) / B + 1 / 278.15) - 273.15;
 }
 
-void printValueToLCD(int value, String title, String symbol, int min, int mid, int max) {
+void printValueToLCD(int value, String title, String symbol, int min, int mid, int mid_max, int max) {
   lcd.clear();
-  setBacklightColour(value, min, mid, max);
+  setBacklightColour(value, min, mid, mid_max, max);
   lcd.setCursor(0, 0);
   lcd.print(title);
   lcd.setCursor(2, 1);
@@ -80,50 +91,23 @@ void printValueToLCD(int value, String title, String symbol, int min, int mid, i
 }
 
 void mainTimer() {
-  // celcius = 15.6;
-  // celcius = dht.readTemperature();
-  float analog = analogRead(DHTPIN);
-  celcius = tempToCelcius(analog);
+  lastButtonState = currentButtonState;
+  currentButtonState = digitalRead(BUTTON_PIN);
 
-  // humidity = 40.1;
-  // humidity = dht.readHumidity();
-
-  /*
-  if (isnan(celcius) || isnan(humidity)) {
-    Serial.println("Failed to read from DHT sensor!");
-  }
-  */
-
-  // airQuality = 30;
+  analogTemp = analogRead(DHTPIN);
+  celcius = tempToCelcius(analogTemp);
   airQuality = analogRead(MQ135PIN);
 
-  // button = 0;
-  button = digitalRead(CONTROLLERPIN);
-
   Blynk.virtualWrite(V2, celcius);
-  // Blynk.virtualWrite(V3, humidity);
   Blynk.virtualWrite(V4, airQuality);
 
-  Serial.print("Celcius: ");
-  Serial.print(celcius);
-  Serial.println(" 'C");
-
-  Serial.print("Air Quality: ");
-  Serial.print(airQuality);
-  Serial.println(" AQI");
-
-  Serial.print("Button: ");
-  Serial.println(button);
-
-  if (button == 0) {
-    printValueToLCD(celcius, "Temperature", "\x03", -10, 15, 50);
-    /*
-  } else if (button <= 160) {
-    printValueToLCD(humidity, "Humidity", "%", 0, 50, 100);
-    */
-  } else if (button == 1) {
-    printValueToLCD(airQuality, "Air Quality", " AQI", 0, 250, 500);
+  if (lastButtonState == HIGH && currentButtonState == LOW) {
+    if (lcdState == LOW) { lcdState = HIGH; } 
+    else { lcdState = LOW; }
   }
+
+  if (lcdState == LOW) { printValueToLCD(celcius, "Temperature", "\x03", -10, 17, 25, 50); } 
+  else { printValueToLCD(airQuality, "Air Quality", " AQI", 0, 100, 150, 600); }
 }
 
 void connectToWifi() {
@@ -141,7 +125,7 @@ void connectToWifi() {
     if (counter++ >= 60) { ESP.restart(); }
     status = WiFi.status();
     Serial.print(getWifiStatus(status));
-    pinMode(CONTROLLERPIN, INPUT);
+    pinMode(BUTTON_PIN, INPUT);
     Serial.println("...");
     delay(500);
   }
@@ -155,16 +139,15 @@ void connectToWifi() {
 void setup() {
   Serial.begin(115200);
   connectToWifi();
-  pinMode(CONTROLLERPIN, INPUT);
+  pinMode(BUTTON_PIN, INPUT);
 
   lcd.begin(16, 2, 0);
   lcd.setRGB(0, 255, 0);
   lcd.createChar(3, degreeSymbol);
 
-  // dht.begin();
-
   Blynk.begin(BLYNK_AUTH_TOKEN, WIFI_SSID, WIFI_PASSWORD);
-  timer.setInterval(3000L, mainTimer);
+  currentButtonState = digitalRead(BUTTON_PIN);
+  timer.setInterval(1000L, mainTimer);
 }
 
 void loop() {
