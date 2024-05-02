@@ -29,18 +29,6 @@ int currentButtonState;
 int lastButtonState;
 int lcdState = LOW;
 
-String getWifiStatus(int status) {
-  switch(status) {
-    case WL_IDLE_STATUS: return "Wi-Fi Idle";
-    case WL_SCAN_COMPLETED: return "Scan Completed";
-    case WL_NO_SSID_AVAIL: return "No SSID";
-    case WL_CONNECT_FAILED: return "Wi-Fi Failed";
-    case WL_CONNECTION_LOST: return "Wi-Fi Lost";
-    case WL_CONNECTED: return "Wi-Fi Connected";
-    case WL_DISCONNECTED: return "Wi-Fi Init Bruv";
-  }
-}
-
 void setBacklightColour(float input, int min, int mid, int max) {
   int r, g, b;
 
@@ -99,7 +87,19 @@ void mainTimer() {
   }
 
   if (lcdState == LOW) { printValueToLCD(celcius, "Temperature", "\x03", -10, 18, 50); } 
-  else { printValueToLCD(airQuality, "Air Quality", " AQI", 0, 150, 600); }
+  else { printValueToLCD(airQuality, "Air Quality", " AQI", 0, 500, 1000); }
+}
+
+String getWifiStatus(int status) {
+  switch(status) {
+    case WL_IDLE_STATUS: return "Wi-Fi Idle";
+    case WL_SCAN_COMPLETED: return "Scan Completed";
+    case WL_NO_SSID_AVAIL: return "No SSID";
+    case WL_CONNECT_FAILED: return "Wi-Fi Failed";
+    case WL_CONNECTION_LOST: return "Wi-Fi Lost";
+    case WL_CONNECTED: return "Wi-Fi Connected";
+    case WL_DISCONNECTED: return "Wi-Fi Init Bruv";
+  }
 }
 
 void connectToWifi() {
@@ -154,6 +154,8 @@ void setup() {
   lcd.clear();
   lcd.print("Blynking...");
   Blynk.begin(BLYNK_AUTH_TOKEN, WIFI_SSID, WIFI_PASSWORD);
+  lcd.clear();
+  lcd.print("Blynked!");
   currentButtonState = digitalRead(BUTTON_PIN);
   timer.setInterval(1000L, mainTimer);
 }
