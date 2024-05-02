@@ -4,7 +4,7 @@ from scipy.interpolate import interp1d
 
 def main() -> None:
     # Testing
-    celsius: float = 70
+    celsius: float = 20
     print(f"Temperature: {celsius}°C")
     print_colour(celsius, -15, 18, 25, 50)
 

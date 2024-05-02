@@ -31,39 +31,31 @@ int lcdState = LOW;
 
 String getWifiStatus(int status) {
   switch(status) {
-    case WL_IDLE_STATUS: return "WL_IDLE_STATUS";
-    case WL_SCAN_COMPLETED: return "WL_SCAN_COMPLETED";
-    case WL_NO_SSID_AVAIL: return "WL_NO_SSID_AVAIL";
-    case WL_CONNECT_FAILED: return "WL_CONNECT_FAILED";
-    case WL_CONNECTION_LOST: return "WL_CONNECTION_LOST";
-    case WL_CONNECTED: return "WL_CONNECTED";
-    case WL_DISCONNECTED: return "WL_DISCONNECTED";
+    case WL_IDLE_STATUS: return "Wi-Fi Idle";
+    case WL_SCAN_COMPLETED: return "Scan Completed";
+    case WL_NO_SSID_AVAIL: return "No SSID";
+    case WL_CONNECT_FAILED: return "Wi-Fi Failed";
+    case WL_CONNECTION_LOST: return "Wi-Fi Lost";
+    case WL_CONNECTED: return "Wi-Fi Connected";
+    case WL_DISCONNECTED: return "Wi-Fi Init Bruv";
   }
 }
 
-void setBacklightColour(float input, int min, int mid, int mid_max, int max) {
+void setBacklightColour(float input, int min, int mid, int max) {
+  int r, g, b;
+
   if (input <= min) {
-    int r = 0;
-    int g = 0;
-    int b = 255;
-  } 
-
-  else if (input >= max) {
-    int r = 255;
-    int g = 0;
-    int b = 0;
-  } 
-
-  else {
-    float x[] = {min, mid, mid_max, max};
-
-    int y_r[] = {0, 0, 255, 255};
-    int y_g[] = {0, 255, 255, 0};
-    int y_b[] = {255, 0, 0, 0};
-
-    int r = constrain(map(input, min, max, 0, 255), 0, 255);
-    int g = constrain(map(input, min, max, 0, 255), 0, 255);
-    int b = constrain(map(input, min, max, 0, 255), 0, 255);
+    r = 0;
+    g = 0;
+    b = 255;
+  } else if (input <= mid) {
+    r = 0;
+    g = map(input, min, mid, 0, 255);
+    b = 255 - g;
+  } else {
+    r = 255;
+    g = map(input, mid, max, 255, 0);
+    b = 0;
   }
 
   lcd.setRGB(r, g, b);
@@ -79,9 +71,9 @@ int tempToCelcius(float analog) {
   return 1.0 / (log(R / R0) / B + 1 / 278.15) - 273.15;
 }
 
-void printValueToLCD(int value, String title, String symbol, int min, int mid, int mid_max, int max) {
+void printValueToLCD(int value, String title, String symbol, int min, int mid, int max) {
   lcd.clear();
-  setBacklightColour(value, min, mid, mid_max, max);
+  setBacklightColour(value, min, mid, max);
   lcd.setCursor(0, 0);
   lcd.print(title);
   lcd.setCursor(2, 1);
@@ -106,15 +98,24 @@ void mainTimer() {
     else { lcdState = LOW; }
   }
 
-  if (lcdState == LOW) { printValueToLCD(celcius, "Temperature", "\x03", -10, 17, 25, 50); } 
-  else { printValueToLCD(airQuality, "Air Quality", " AQI", 0, 100, 150, 600); }
+  if (lcdState == LOW) { printValueToLCD(celcius, "Temperature", "\x03", -10, 18, 50); } 
+  else { printValueToLCD(airQuality, "Air Quality", " AQI", 0, 150, 600); }
 }
 
 void connectToWifi() {
   int status = WL_IDLE_STATUS;
+
   Serial.print("\nConnecting to network: ");
   Serial.println(WIFI_SSID);
   Serial.println(getWifiStatus(status));
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Connecting to:");
+  lcd.setCursor(0, 1);
+  lcd.print(WIFI_SSID);
+  delay(500);
+
   WiFi.disconnect(true);  // Disconnect from Wi-Fi to set new Wi-Fi connection
   WiFi.mode(WIFI_STA);  // Set Wi-Fi mode
   WiFi.begin(WIFI_SSID, WPA2_AUTH_PEAP, EAP_ANONYMOUS_IDENTITY, EAP_IDENTITY, EAP_PASSWORD); 
@@ -125,6 +126,11 @@ void connectToWifi() {
     if (counter++ >= 60) { ESP.restart(); }
     status = WiFi.status();
     Serial.print(getWifiStatus(status));
+
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print(getWifiStatus(status));
+
     pinMode(BUTTON_PIN, INPUT);
     Serial.println("...");
     delay(500);
@@ -138,13 +144,15 @@ void connectToWifi() {
 
 void setup() {
   Serial.begin(115200);
-  connectToWifi();
   pinMode(BUTTON_PIN, INPUT);
 
   lcd.begin(16, 2, 0);
-  lcd.setRGB(0, 255, 0);
+  lcd.setRGB(255, 255, 255);
   lcd.createChar(3, degreeSymbol);
 
+  connectToWifi();
+  lcd.clear();
+  lcd.print("Blynking...");
   Blynk.begin(BLYNK_AUTH_TOKEN, WIFI_SSID, WIFI_PASSWORD);
   currentButtonState = digitalRead(BUTTON_PIN);
   timer.setInterval(1000L, mainTimer);
