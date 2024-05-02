@@ -87,7 +87,7 @@ void mainTimer() {
   }
 
   if (lcdState == LOW) { printValueToLCD(celcius, "Temperature", "\x03", -10, 18, 50); } 
-  else { printValueToLCD(airQuality, "Air Quality", " AQI", 0, 500, 1000); }
+  else { printValueToLCD(airQuality, "Air Quality", " AQI", 0, 100, 1000); }
 }
 
 String getWifiStatus(int status) {
