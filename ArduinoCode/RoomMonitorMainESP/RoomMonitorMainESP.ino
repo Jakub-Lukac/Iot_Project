@@ -11,11 +11,9 @@
 #include <math.h>
 
 #define MQ135PIN A4  // Analog pin for MQ-135 air quality sensor
-#define DHTPIN 34   // Digital pin for DHT-11 temperature/humidity sensor
-// #define DHTTYPE DHT11
-
+#define TEMPERATUREPIN 34   // Digital pin for temperature sensor
 #define BUTTON_PIN 25  // Digital pin for button/rotary controller to control the RGB LCD
-// DHT dht(DHTPIN, DHTTYPE);  // Types: DHT11, DHT22 (AM2302, AM2321), DHT21 (AM2301)
+
 
 rgb_lcd lcd;
 BlynkTimer timer;
@@ -74,7 +72,7 @@ void mainTimer() {
   lastButtonState = currentButtonState;
   currentButtonState = digitalRead(BUTTON_PIN);
 
-  analogTemp = analogRead(DHTPIN);
+  analogTemp = analogRead(TEMPERATUREPIN);
   celcius = tempToCelcius(analogTemp);
   airQuality = analogRead(MQ135PIN);
 
@@ -82,12 +80,18 @@ void mainTimer() {
   Blynk.virtualWrite(V4, airQuality);
 
   if (lastButtonState == HIGH && currentButtonState == LOW) {
-    if (lcdState == LOW) { lcdState = HIGH; } 
-    else { lcdState = LOW; }
+    if (lcdState == LOW) { 
+      lcdState = HIGH; 
+    } else { 
+      lcdState = LOW; 
+    }
   }
 
-  if (lcdState == LOW) { printValueToLCD(celcius, "Temperature", "\x03", -10, 18, 50); } 
-  else { printValueToLCD(airQuality, "Air Quality", " AQI", 0, 100, 1000); }
+  if (lcdState == LOW) { 
+    printValueToLCD(celcius, "Temperature", "\x03", -10, 18, 50); 
+  } else { 
+    printValueToLCD(airQuality, "Air Quality", " AQI", 0, 100, 1000); 
+  }
 }
 
 String getWifiStatus(int status) {
